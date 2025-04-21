@@ -1,12 +1,8 @@
-# fly.toml app configuration file generated for divizend-ipfs on 2025-04-21T03:17:08+02:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'divizend-ipfs'
 primary_region = 'fra'
 
 [build]
+  dockerfile = 'Dockerfile'
 
 [env]
   IPFS_PATH = '/data/ipfs'
@@ -25,45 +21,51 @@ primary_region = 'fra'
   processes = ['app']
 
 [[services]]
-  protocol = ''
-  internal_port = 0
-
-  [[services.ports]]
-    port = 8080
-    handlers = ['tls', 'http']
-
-  [[services.ports]]
-    port = 4001
-
+  protocol = 'tcp'
+  internal_port = 5001
   [[services.ports]]
     port = 5001
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 50
+    soft_limit = 25
+  [[services.http_checks]]
+    interval = '30s'
+    timeout = '5s'
+    path = '/api/v0/version'
+    port = 5001
 
+[[services]]
+  protocol = 'tcp'
+  internal_port = 4001
+  [[services.ports]]
+    port = 4001
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 50
+    soft_limit = 25
+  [[services.tcp_checks]]
+    interval = '15s'
+    timeout = '2s'
+
+[[services]]
+  protocol = 'udp'
+  internal_port = 4001
+  [[services.ports]]
+    port = 4001
   [services.concurrency]
     type = 'connections'
     hard_limit = 50
     soft_limit = 25
 
-  [[services.tcp_checks]]
-    interval = '15s'
-    timeout = '2s'
-
-  [[services.tcp_checks]]
-    interval = '15s'
-    timeout = '2s'
-
-  [[services.http_checks]]
-    interval = '30s'
-    timeout = '5s'
-    path = '/webui'
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'
 
 [checks]
-  [checks.httpcheck]
+  [checks.api]
     port = 5001
     type = 'http'
     interval = '30s'
     timeout = '5s'
-    path = '/webui'
-
-[[vm]]
-  size = 'shared-cpu-1x'
-  memory = '512mb'
+    path = '/api/v0/version'
