@@ -1,0 +1,51 @@
+# fly.toml app configuration file generated for divizend-ipfs-gateway on 2025-04-21T02:38:20+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'divizend-ipfs-gateway'
+primary_region = 'fra'
+
+[build]
+
+[env]
+  IPFS_PATH = '/data/ipfs'
+
+[[mounts]]
+  source = 'ipfs_data'
+  destination = '/data/ipfs'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 50
+    soft_limit = 25
+
+  [[services.tcp_checks]]
+    interval = '10s'
+    timeout = '2s'
+    grace_period = '5s'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'
