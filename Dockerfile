@@ -9,6 +9,5 @@ ENTRYPOINT ["/bin/sh", "-c", "\
   if [ ! -f \"$IPFS_PATH/config\" ]; then \
     ipfs init --profile=server; \
   fi && \
-  ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080; \
   ipfs daemon --enable-gc --migrate=true \
 "]
