@@ -1,50 +1,61 @@
-# fly.toml app configuration file generated for divizend-ipfs-gateway on 2025-04-21T02:38:20+02:00
+# fly.toml app configuration file generated for divizend-ipfs on 2025-04-21T02:52:34+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'divizend-ipfs-gateway'
+app = 'divizend-ipfs'
 primary_region = 'fra'
 
 [build]
 
 [env]
+  IPFS_PROFILE = "server"
   IPFS_PATH = '/data/ipfs'
 
 [[mounts]]
   source = 'ipfs_data'
   destination = '/data/ipfs'
 
-[http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
-
-[[services]]
-  protocol = 'tcp'
-  internal_port = 8080
-
+[services]
   [[services.ports]]
-    port = 80
-    handlers = ['http']
+    handlers = ["tls", "http"]
+    port = 8080
     force_https = true
 
   [[services.ports]]
-    port = 443
-    handlers = ['tls', 'http']
+    port = 4001
+    protocol = "tcp"
 
+  [[services.ports]]
+    port = 5001
+    protocol = "tcp"
+
+  [[services.tcp_checks]]
+    port = 4001
+    interval = "15s"
+    timeout = "2s"
+
+  [[services.tcp_checks]]
+    port = 5001
+    interval = "15s"
+    timeout = "2s"
+
+  [[services.http_checks]]
+    path = "/webui"
+    interval = "30s"
+    timeout = "5s"
+  
   [services.concurrency]
     type = 'connections'
     hard_limit = 50
     soft_limit = 25
 
-  [[services.tcp_checks]]
-    interval = '10s'
-    timeout = '2s'
-    grace_period = '5s'
+[checks]
+  [checks.httpcheck]
+    type = "http"
+    interval = "30s"
+    timeout = "5s"
+    path = "/webui"
 
 [[vm]]
   size = 'shared-cpu-1x'
